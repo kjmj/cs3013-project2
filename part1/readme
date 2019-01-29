@@ -1,0 +1,33 @@
+----- Description -----
+This project demonstrates the interception of system calls in linux. We wrote code to intercept the open, close, and
+read system calls.
+
+The modified "open" system call now writes to the log if a user opens a file
+The modified "close" system call now writes to the log if a user closes a file
+The modified "read" system call now writes to the log if a user reads a file containing the string "VIRUS"
+
+----- Getting Everything Setup -----
+Make sure to load into the VM that we created in project 0
+Make sure you are in the directory "cs3013-project2/part1"
+
+To make the project:
+    make all
+This should generate a bunch of files, we will mainly be concerned with "interceptor.ko"
+
+To clean the project:
+    make clean
+
+Once you have made the project, we need to insert the module into the kernel
+    sudo insmod interceptor.ko
+
+Make sure to remove the module from the kernel after using it!
+    sudo rmmod interceptor.ko
+
+----- Did it work? -----
+To see if you loaded the modules correctly, just navigate open up your system log and read its contents
+    /var/log/syslog
+
+If you see a bunch of logs saying that a user opened/closed a file, great, you have set up everything correctly!
+
+If you see a log saying that a malicious file was opened, then that is (likely and hopefully) the intercepted read system
+call being executed when a user opens a file containing the string "VIRUS"
