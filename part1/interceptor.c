@@ -8,6 +8,7 @@ unsigned long **sys_call_table; // Location of the syscall table in memory
 asmlinkage long (*ref_sys_open)(const char *pathname, int flags, mode_t mode);
 asmlinkage long (*ref_sys_close)(int fd);
 asmlinkage long (*ref_sys_read)(int fd, void *buf, size_t count);
+asmlinkage long (*ref_sys_cs3013_syscall1)(void);
 
 // Our new system call functions that we will use to intercept the originals
 
@@ -63,6 +64,14 @@ asmlinkage long new_sys_read(int fd, void *buf, size_t count) {
     return fileSize;
 }
 
+/**
+ * A sample function that just intercepts a custom system call we added in project 0
+ * @return
+ */
+asmlinkage long new_sys_cs3013_syscall1(void) {
+    printk(KERN_INFO "\"'Hello world?!' More like 'Goodbye, world!' EXTERMINATE!\" -- Dalek");
+    return 0;
+}
 
 /**
  * Find the syscall (system call) table in memory
@@ -145,6 +154,7 @@ interceptor_start(void) {
     sys_call_table[__NR_open] = (unsigned long *) new_sys_open;
     sys_call_table[__NR_close] = (unsigned long *) new_sys_close;
     sys_call_table[__NR_read] = (unsigned long *)new_sys_read;
+    sys_call_table[__NR_cs3013_syscall1] = (unsigned long *)new_sys_cs3013_syscall1;
 
     enable_page_protection();
 
@@ -171,6 +181,8 @@ interceptor_end(void) {
     sys_call_table[__NR_open] = (unsigned long *) ref_sys_open;
     sys_call_table[__NR_close] = (unsigned long *) ref_sys_close;
     sys_call_table[__NR_read] = (unsigned long *) ref_sys_read;
+    sys_call_table[__NR_cs3013_syscall1] = (unsigned long *)ref_sys_cs3013_syscall1;
+
 
     enable_page_protection();
 
