@@ -134,9 +134,7 @@ static void enable_page_protection(void) {
 /**
  * Initialize the interception of the specified system calls
  */
-static int __init
-
-interceptor_start(void) {
+static int __init interceptor_start(void) {
     // Find the system call table
     if (!(sys_call_table = find_sys_call_table())) {
         // Cancel the module loading step
@@ -168,9 +166,7 @@ interceptor_start(void) {
 /**
  * Reverts the changes made by the interceptor_start function
  */
-static void __exit
-
-interceptor_end(void) {
+static void __exit interceptor_end(void) {
     // If we don't know what the syscall table is, don't bother
     if (!sys_call_table)
         return;
