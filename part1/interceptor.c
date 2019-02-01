@@ -20,8 +20,7 @@ asmlinkage long new_sys_open(const char *pathname, int flags, mode_t mode) {
 
     // ignore the root user
     if (uid >= 1000) {
-        printk(KERN_INFO
-        "User %d is opening file: %s\n", uid, pathname);
+        printk(KERN_INFO "User %d is opening file: %s\n", uid, pathname);
     }
 
     return ref_sys_open(pathname, flags, mode);
@@ -35,8 +34,7 @@ asmlinkage long new_sys_close(int fd) {
 
     // ignore the root user
     if (uid >= 1000) {
-        printk(KERN_INFO
-        "User %d is closing file descriptor: %d\n", uid, fd);
+        printk(KERN_INFO "User %d is closing file descriptor: %d\n", uid, fd);
     }
 
     return ref_sys_close(fd);
@@ -49,16 +47,26 @@ asmlinkage long new_sys_close(int fd) {
 asmlinkage long new_sys_read(int fd, void *buf, size_t count) {
     int uid = current_uid().val;
     int fileSize = ref_sys_read(fd, buf, count);
+    int i; // used to index through the file buffer
 
     // if it is not a normal user, just return
     if (uid < 1000) {
         return fileSize;
     }
 
-    // if we find the string "VIRUS" in the file we are reading
-    if (strstr((char *) buf, "VIRUS") != NULL) {
-        printk(KERN_INFO
-        "User %d read from file descriptor %d, but that read contained malicious code!\n", uid, fd);
+    // dont check if the buffer is empty
+    if(fileSize == 0) {
+        return fileSize;
+    }
+
+    // iterate through all the chars in the text file
+    for (i = 0; i < count; i++) {
+        char *tmp = (char *) buf;
+        if (i >= 4) {
+            if (tmp[i - 4] == 'V' && tmp[i - 3] == 'I' && tmp[i - 2] == 'R' && tmp[i - 1] == 'U' && tmp[i] == 'S') {
+                printk(KERN_INFO "User %d read from file descriptor %d, but that read contained malicious code!\n", uid, fd);
+            }
+        }
     }
 
     return fileSize;
@@ -69,7 +77,7 @@ asmlinkage long new_sys_read(int fd, void *buf, size_t count) {
  * @return
  */
 asmlinkage long new_sys_cs3013_syscall1(void) {
-    printk(KERN_INFO "\"'Hello world?!' More like 'Goodbye, world!' EXTERMINATE!\" -- Dalek");
+    printk(KERN_INFO "\"'Hello world?!' More like 'Goodbye, world!' EXTERMINATE!\" -- Dalek\n");
     return 0;
 }
 
@@ -85,9 +93,7 @@ static unsigned long **find_sys_call_table(void) {
         sct = (unsigned long **) offset;
 
         if (sct[__NR_close] == (unsigned long *) sys_close) {
-            printk(KERN_INFO
-            "Interceptor: Found syscall table at address: 0x%02lX",
-                    (unsigned long) sct);
+            printk(KERN_INFO "Interceptor: Found syscall table at address: 0x%02lX\n", (unsigned long) sct);
             return sct;
         }
 
@@ -144,21 +150,20 @@ static int __init interceptor_start(void) {
     // Store a copy of all the existing functions
     ref_sys_open = (void *) sys_call_table[__NR_open];
     ref_sys_close = (void *) sys_call_table[__NR_close];
-    ref_sys_read = (void *)sys_call_table[__NR_read];
+    ref_sys_read = (void *) sys_call_table[__NR_read];
 
     // Replace the existing system calls
     disable_page_protection();
 
     sys_call_table[__NR_open] = (unsigned long *) new_sys_open;
     sys_call_table[__NR_close] = (unsigned long *) new_sys_close;
-    sys_call_table[__NR_read] = (unsigned long *)new_sys_read;
-    sys_call_table[__NR_cs3013_syscall1] = (unsigned long *)new_sys_cs3013_syscall1;
+    sys_call_table[__NR_read] = (unsigned long *) new_sys_read;
+    sys_call_table[__NR_cs3013_syscall1] = (unsigned long *) new_sys_cs3013_syscall1;
 
     enable_page_protection();
 
     // And indicate the load was successful
-    printk(KERN_INFO
-    "Loaded interceptor!");
+    printk(KERN_INFO "Loaded interceptor!\n");
 
     return 0;
 }
@@ -177,13 +182,12 @@ static void __exit interceptor_end(void) {
     sys_call_table[__NR_open] = (unsigned long *) ref_sys_open;
     sys_call_table[__NR_close] = (unsigned long *) ref_sys_close;
     sys_call_table[__NR_read] = (unsigned long *) ref_sys_read;
-    sys_call_table[__NR_cs3013_syscall1] = (unsigned long *)ref_sys_cs3013_syscall1;
+    sys_call_table[__NR_cs3013_syscall1] = (unsigned long *) ref_sys_cs3013_syscall1;
 
 
     enable_page_protection();
 
-    printk(KERN_INFO
-    "Unloaded interceptor!");
+    printk(KERN_INFO "Unloaded interceptor!\n");
 }
 
 MODULE_LICENSE("GPL");
