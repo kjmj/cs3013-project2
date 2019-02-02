@@ -151,6 +151,7 @@ static int __init interceptor_start(void) {
     ref_sys_open = (void *) sys_call_table[__NR_open];
     ref_sys_close = (void *) sys_call_table[__NR_close];
     ref_sys_read = (void *) sys_call_table[__NR_read];
+    ref_sys_cs3013_syscall1 = (void *) sys_call_table[__NR_cs3013_syscall1];
 
     // Replace the existing system calls
     disable_page_protection();
@@ -183,7 +184,6 @@ static void __exit interceptor_end(void) {
     sys_call_table[__NR_close] = (unsigned long *) ref_sys_close;
     sys_call_table[__NR_read] = (unsigned long *) ref_sys_read;
     sys_call_table[__NR_cs3013_syscall1] = (unsigned long *) ref_sys_cs3013_syscall1;
-
 
     enable_page_protection();
 

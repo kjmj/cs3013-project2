@@ -1,9 +1,12 @@
 ----- Project is in Progress -----
-This project is in progress. Expect for it to change as we work more on it
+This project is in progress. Expect for it to change as we work more on it.
 
 ----- Description -----
-This project starts at the current process, and traverses up to the init process, printing out the siblings and
-children of each process along the way.
+procAncestry.c - This is the user space program. We call our system call, passing in its own pid. Eventually, we will
+read a pid from the command line arguments
+
+traverseAncestry.c - This is the kernel space program. It takes a pid from procAncestry.c and traverses the family
+tree of that pid, printing out the siblings and children of each process along the way.
 
 ----- Getting Everything Setup -----
 Make sure to load into the VM that we created in project 0
@@ -11,13 +14,16 @@ Make sure you are in the directory "cs3013-project2/part2"
 
 To make the project:
     make all
-This should generate a bunch of files, we will mainly be concerned with "traverseAncestry.ko"
+    gcc procAncestry.c -o procAncestry
+
+This should generate a bunch of files, we will mainly be concerned with "traverseAncestry.ko" and "procAncestry"
 
 To clean the project:
     make clean
 
-Once you have made the project, we need to insert the module into the kernel
+Once you have made the project, we need to insert the module into the kernel and then execute the overridden system call
     sudo insmod traverseAncestry.ko
+    ./procAncestry
 
 Make sure to remove the module from the kernel after using it!
     sudo rmmod traverseAncestry.ko
@@ -26,4 +32,4 @@ Make sure to remove the module from the kernel after using it!
 To see if you loaded the modules correctly, just navigate open up your system log and read its contents
     /var/log/syslog
 
-You should see a bunch of logs climbing up the ancestry tree, starting from the current process
+You should see a bunch of logs climbing up the ancestry tree, starting from the ./procAncestry process
