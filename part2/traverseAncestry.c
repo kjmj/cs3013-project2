@@ -13,7 +13,6 @@ struct ancestry {
 // Used to store references to the original systems calls
 asmlinkage long (*ref_sys_cs3013_syscall2)(void);
 
-
 /**
  * This function gathers information about the ancestry of the target_pid such as parents, siblings, and children.
  * It will start at target_pid and traverse the ancestry tree all the way until init. It will log information about
@@ -149,10 +148,10 @@ static int __init interceptor_start(void) {
         return -1;
     }
 
-    // Store a copy of all the existing function
+    // Store a copy of the existing function
     ref_sys_cs3013_syscall2 = (void *) sys_call_table[__NR_cs3013_syscall2];
 
-    // Replace the existing system calls
+    // Replace the existing system call
     disable_page_protection();
 
     sys_call_table[__NR_cs3013_syscall2] = (unsigned long *) new_sys_cs3013_syscall2;
