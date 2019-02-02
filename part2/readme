@@ -2,11 +2,10 @@
 This project is in progress. Expect for it to change as we work more on it.
 
 ----- Description -----
-procAncestry.c - This is the user space program. We call our system call, passing in its own pid. Eventually, we will
-read a pid from the command line arguments
+procAncestry.c - This is the user space program. This is where we execute our system call.
 
-traverseAncestry.c - This is the kernel space program. It takes a pid from procAncestry.c and traverses the family
-tree of that pid, printing out the siblings and children of each process along the way.
+traverseAncestry.c - This is the kernel space program. It takes a pid from procAncestry.c and gets the ancestors, siblings,
+and children of that process.
 
 ----- Getting Everything Setup -----
 Make sure to load into the VM that we created in project 0
@@ -23,7 +22,7 @@ To clean the project:
 
 Once you have made the project, we need to insert the module into the kernel and then execute the overridden system call
     sudo insmod traverseAncestry.ko
-    ./procAncestry
+    ./procAncestry [PID]
 
 Make sure to remove the module from the kernel after using it!
     sudo rmmod traverseAncestry.ko
@@ -33,3 +32,5 @@ To see if you loaded the modules correctly, just navigate open up your system lo
     /var/log/syslog
 
 You should see a bunch of logs climbing up the ancestry tree, starting from the ./procAncestry process
+
+Additionally, our user space program prints out information that it received from the kernel space program.

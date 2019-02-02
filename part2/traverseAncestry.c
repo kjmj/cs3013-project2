@@ -14,69 +14,73 @@ struct ancestry {
 asmlinkage long (*ref_sys_cs3013_syscall2)(void);
 
 /**
- * This function gathers information about the ancestry of the target_pid such as parents, siblings, and children.
- * It will start at target_pid and traverse the ancestry tree all the way until init. It will log information about
- * parents, siblings, and children along the way. Additionally, it will fill the preallocated struct called response
- * with this information.
+ * This function gathers the siblings, children, and ancestors of target_pid.
+ * It logs this informaton to syslog, and also fills the response struct with this information
  *
- * @param target_pid The process id in question
+ * @param target_pid The process id we want ancestery information for
  * @param response A preallocated struct that we will fill with information about the PIDs ancestry
- * @return
+ * @return 0 on success, -1 on error
  */
 asmlinkage long new_sys_cs3013_syscall2(unsigned short *target_pid, struct ancestry *response) {
-    /**
-     * TODO store info about the ancestors in our struct
-     * TODO return this struct to the user space
-     */
-
-    // we use this struct to navigate up to the init process
-    struct task_struct *task;
-
-    // we use these structs to traverse the siblings and children of each "task"
-    struct task_struct *member;
-    struct list_head *pos;
-    int i; // used to keep track of the number of siblings/children
+    struct task_struct *task; // used to navigate through the processes parents
+    struct task_struct *member; // used to navigate through the siblings and children of the process
+    int i; // count how many siblings, children, or ancestors we have iterated through
 
     unsigned short pid; // the pid to start ancestor traversal at
-    struct ancestry ancestryVals; // will eventually contain info about the ancestors of pid
+    struct ancestry aTmp;
+    struct ancestry *ancestryVals = &aTmp; // will eventually contain info about the ancestors of pid
 
-    // make sure pid pointer is valid
+    // copy pid pointer from user space and make sure it is valid
     if (copy_from_user(&pid, target_pid, sizeof(unsigned short)) != 0) {
         printk(KERN_INFO "Error reading pid from user space\n");
         return EFAULT;
     }
 
-
-    // make sure ancestry struct is valid
-    if (copy_from_user(&ancestryVals, response, sizeof(struct ancestry)) != 0){
+    // copy ancestry struct from user space and make sure it is valid
+    if (copy_from_user(ancestryVals, response, sizeof(struct ancestry)) != 0){
         printk(KERN_INFO "Error reading ancestry struct from user space\n");
         return EFAULT;
     }
 
+    task = pid_task(find_vpid(pid), PIDTYPE_PID);
+    if(task == NULL) {
+        printk(KERN_INFO "Error: PID %hu is not a running process.\n", pid);
+        return -1;
+    }
 
-    // for every task up to init, starting at the pid we recieved
-    for (task = pid_task(find_vpid(pid), PIDTYPE_PID); task != &init_task; task = task->parent) {
-        printk(KERN_INFO "At Process: %s [%d] Parent: [%d]\n", task->comm, task->pid, task->parent->pid);
+    printk(KERN_INFO "Started at %s [%d]\n", task->comm, task->pid);
 
-        // Iterate through the siblings of this process
-        i = 1;
-        list_for_each(pos, &task->sibling) {
-            member = list_entry(pos, struct task_struct, sibling);
-
-            // skip ourself (we aren't our own sibling)
-            if (member->pid != 0) {
-                printk(KERN_INFO "Sibling Process #%d: %s [%d] \n", i, member->comm, member->pid);
-                i++;
-            }
-        }
-
-        // Iterate through the children of this process
-        i = 1;
-        list_for_each(pos, &task->children) {
-            member = list_entry(pos, struct task_struct, sibling);
-            printk(KERN_INFO "Child Process #%d: %s [%d] \n", i, member->comm, member->pid);
+    // Get Siblings
+    i = 0;
+    list_for_each_entry(member, &(task->sibling), sibling) {
+        if (member->pid != 0) {
+            ancestryVals->siblings[i] = member->pid;
             i++;
+            printk(KERN_INFO "Sibling #%d: %s [%d] \n", i, member->comm, member->pid);
         }
+    }
+
+    // Get Children
+    i = 0;
+    list_for_each_entry(member, &(task->children), sibling) {
+        ancestryVals->children[i] = member->pid;
+        i++;
+        printk(KERN_INFO "Child #%d: %s [%d] \n", i, member->comm, member->pid);
+    }
+
+    // Get Ancestors
+    i = 0;
+    for (task = task->parent; task != &init_task; task = task->parent) {
+        ancestryVals->ancestors[i] = task->pid;
+        i++;
+        printk(KERN_INFO "Parent #%d: %s [%d]\n", i, task->comm, task->pid);
+    }
+
+
+    //copy over and test that the ancestry pointer is valid
+    if (copy_to_user(response, ancestryVals, sizeof(struct ancestry)) != 0){
+        printk(KERN_INFO "Error copying ancestry struct to user space\n");
+        return EFAULT;
     }
 
     return 0;
