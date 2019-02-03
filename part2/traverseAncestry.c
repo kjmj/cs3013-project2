@@ -42,13 +42,14 @@ asmlinkage long new_sys_cs3013_syscall2(unsigned short *target_pid, struct ances
         return EFAULT;
     }
 
+    // try to find that process
     task = pid_task(find_vpid(pid), PIDTYPE_PID);
     if(task == NULL) {
         printk(KERN_INFO "Error: PID %hu is not a running process.\n", pid);
         return -1;
     }
 
-    printk(KERN_INFO "Started at %s [%d]\n", task->comm, task->pid);
+    printk(KERN_INFO "Target Process: %s [%d]\n", task->comm, task->pid);
 
     // Get Siblings
     i = 0;
@@ -56,7 +57,7 @@ asmlinkage long new_sys_cs3013_syscall2(unsigned short *target_pid, struct ances
         if (member->pid != 0) {
             ancestryVals->siblings[i] = member->pid;
             i++;
-            printk(KERN_INFO "Sibling #%d: %s [%d] \n", i, member->comm, member->pid);
+            printk(KERN_INFO "Sibling #%d of Target Process [%d]: %s [%d] \n", i, pid, member->comm, member->pid);
         }
     }
 
@@ -65,7 +66,7 @@ asmlinkage long new_sys_cs3013_syscall2(unsigned short *target_pid, struct ances
     list_for_each_entry(member, &(task->children), sibling) {
         ancestryVals->children[i] = member->pid;
         i++;
-        printk(KERN_INFO "Child #%d: %s [%d] \n", i, member->comm, member->pid);
+        printk(KERN_INFO "Child #%d of Target Process [%d]: %s [%d] \n", i, pid, member->comm, member->pid);
     }
 
     // Get Ancestors
@@ -73,7 +74,7 @@ asmlinkage long new_sys_cs3013_syscall2(unsigned short *target_pid, struct ances
     for (task = task->parent; task != &init_task; task = task->parent) {
         ancestryVals->ancestors[i] = task->pid;
         i++;
-        printk(KERN_INFO "Parent #%d: %s [%d]\n", i, task->comm, task->pid);
+        printk(KERN_INFO "Ancestor #%d of Target Process [%d]: %s [%d]\n", i, pid, task->comm, task->pid);
     }
 
 
