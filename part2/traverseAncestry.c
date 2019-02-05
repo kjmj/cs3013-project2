@@ -15,11 +15,11 @@ asmlinkage long (*ref_sys_cs3013_syscall2)(void);
 
 /**
  * This function gathers the siblings, children, and ancestors of target_pid.
- * It logs this informaton to syslog, and also fills the response struct with this information
+ * It logs this information to syslog, and also fills the response struct with this information
  *
- * @param target_pid The process id we want ancestery information for
+ * @param target_pid The process id we want ancestry information for
  * @param response A preallocated struct that we will fill with information about the PIDs ancestry
- * @return 0 on success, -1 on error
+ * @return 0 on success, -1 if that PID is not a running process
  */
 asmlinkage long new_sys_cs3013_syscall2(unsigned short *target_pid, struct ancestry *response) {
     struct task_struct *task; // used to navigate through the processes parents
@@ -49,7 +49,7 @@ asmlinkage long new_sys_cs3013_syscall2(unsigned short *target_pid, struct ances
         return -1;
     }
 
-    printk(KERN_INFO "Target Process: %s [%d]\n", task->comm, task->pid);
+    printk(KERN_INFO "Target Process: [%d]\n", task->pid);
 
     // Get Siblings
     i = 0;
@@ -57,7 +57,7 @@ asmlinkage long new_sys_cs3013_syscall2(unsigned short *target_pid, struct ances
         if (member->pid != 0) {
             ancestryVals->siblings[i] = member->pid;
             i++;
-            printk(KERN_INFO "Sibling #%d of Target Process [%d]: %s [%d] \n", i, pid, member->comm, member->pid);
+            printk(KERN_INFO "Sibling #%d of Target Process [%d]: [%d] \n", i, pid, member->pid);
         }
     }
 
@@ -66,15 +66,20 @@ asmlinkage long new_sys_cs3013_syscall2(unsigned short *target_pid, struct ances
     list_for_each_entry(member, &(task->children), sibling) {
         ancestryVals->children[i] = member->pid;
         i++;
-        printk(KERN_INFO "Child #%d of Target Process [%d]: %s [%d] \n", i, pid, member->comm, member->pid);
+        printk(KERN_INFO "Child #%d of Target Process [%d]: [%d] \n", i, pid, member->pid);
     }
 
     // Get Ancestors
     i = 0;
-    for (task = task->parent; task != &init_task; task = task->parent) {
+    for (task = task->parent; task->pid >= 0; task = task->parent) {
         ancestryVals->ancestors[i] = task->pid;
         i++;
-        printk(KERN_INFO "Ancestor #%d of Target Process [%d]: %s [%d]\n", i, pid, task->comm, task->pid);
+        printk(KERN_INFO "Ancestor #%d of Target Process [%d]: [%d]\n", i, pid, task->pid);
+
+        // if we have reached init, break out of this loop
+        if(task->pid == 0) {
+            break;
+        }
     }
 
 

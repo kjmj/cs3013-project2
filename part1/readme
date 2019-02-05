@@ -13,7 +13,7 @@ Make sure you are in the directory "cs3013-project2/part1"
 To make the project:
     make all
 This should generate a bunch of files, we will mainly be concerned with "interceptor.ko". It also makes our testFile,
-which can be found in the /test directory
+which can be found in the /test directory.
 
 To clean the project:
     make clean
@@ -36,7 +36,7 @@ call being executed when a user opens a file containing the string "VIRUS"
 
 ----- Testing -----
 We wrote a testFile that calls open, read, and close on two provided files. It is build automatically in our makefile.
-After inserting the interceptor module, follow these instructions to execute the test
+After inserting the interceptor module, follow these instructions to execute the test:
     cd test
     ./testFile
 
@@ -57,4 +57,3 @@ Output from /var/log/syslog:
     Feb  5 15:26:07 kenneth-VirtualBox kernel: [ 3545.242444] User 1000 read from file descriptor 4, but that read contained malicious code!
     Feb  5 15:26:07 kenneth-VirtualBox kernel: [ 3545.242448] User 1000 is closing file descriptor: 3
     Feb  5 15:26:07 kenneth-VirtualBox kernel: [ 3545.242452] User 1000 is closing file descriptor: 4
-

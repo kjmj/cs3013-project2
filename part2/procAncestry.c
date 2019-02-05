@@ -24,36 +24,15 @@ int main (int argc, char* argv[]) {
 
     unsigned short pid =  atoi(argv[1]);
     struct ancestry *ancestors = (struct ancestry *) malloc(sizeof(struct ancestry));
-    long r = testCall2(&pid, ancestors);
+
+    long t = testCall2(&pid, ancestors);
 
     printf("The return values of the system calls are:\n");
-    printf("\tcs3013_syscall2: %ld\n", r);
+    printf("\tcs3013_syscall2: %ld\n", t);
 
-    if(r == -1) { // some error in our system call
+    if(t == -1) {
+        printf("Error: PID %hu is not a running process.\n", pid);
         exit(1);
-    }
-
-    /**
-     * Iterate through our ancestor results
-     */
-    printf("Started at PID: [%hu]\n", pid);
-
-    for(int i = 0; i < 100; i++) {
-        if(ancestors->siblings[i] != 0) {
-            printf("Sibling #%d PID: [%d]\n", i + 1, ancestors->siblings[i]);
-        }
-    }
-
-    for(int i = 0; i < 100; i++) {
-        if(ancestors->children[i] != 0) {
-            printf("Child #%d PID: [%d]\n", i + 1, ancestors->children[i]);
-        }
-    }
-
-    for(int i = 0; i < 10; i++) {
-        if(ancestors->ancestors[i] != 0) {
-            printf("Parent #%d: [%d]\n", i + 1, ancestors->ancestors[i]);
-        }
     }
 
     return 0;

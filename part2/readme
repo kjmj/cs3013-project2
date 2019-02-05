@@ -1,8 +1,9 @@
------ Project is in Progress -----
-This project is in progress. Expect for it to change as we work more on it.
-
 ----- Description -----
-procAncestry.c - This is the user space program. This is where we execute our system call.
+This project traverses the family tree of a PID. It will gather information about that processes siblings, children, and
+ancestors. This information will be printed to the system log, and returned as a struct to user space.
+
+procAncestry.c - This is the user space program. This is where we execute our system call and receive the ancestor struct
+from the kernel space program.
 
 traverseAncestry.c - This is the kernel space program. It takes a pid from procAncestry.c and gets the ancestors, siblings,
 and children of that process.
@@ -13,9 +14,8 @@ Make sure you are in the directory "cs3013-project2/part2"
 
 To make the project:
     make all
-    gcc procAncestry.c -o procAncestry
-
-This should generate a bunch of files, we will mainly be concerned with "traverseAncestry.ko" and "procAncestry"
+This should generate a bunch of files, we will mainly be concerned with "traverseAncestry.ko" and "procAncestry". It also
+makes our testFile, which can be found in the /test directory.
 
 To clean the project:
     make clean
@@ -33,4 +33,111 @@ To see if you loaded the modules correctly, just navigate open up your system lo
 
 You should see a bunch of logs climbing up the ancestry tree, starting from the ./procAncestry process
 
-Additionally, our user space program prints out information that it received from the kernel space program.
+----- Testing -----
+We wrote a testFile that forks a child process and runs our kernel space ancestry code. It is build automatically in our makefile.
+After inserting the traverseAncestry module, follow these instructions to execute the test:
+    cd test
+    ./testFile
+
+Output from ./testFile:
+    Forked Parent with PID [17375] into Child with PID: [17376]
+
+    The return values of the system calls are:
+            cs3013_syscall2: 0
+
+    Target Process: [17376]
+    Ancestor #1 of the Target Process [17376]: [17375]
+    Ancestor #2 of the Target Process [17376]: [3181]
+    Ancestor #3 of the Target Process [17376]: [3180]
+    Ancestor #4 of the Target Process [17376]: [2185]
+    Ancestor #5 of the Target Process [17376]: [1296]
+    Ancestor #6 of the Target Process [17376]: [1146]
+    Ancestor #7 of the Target Process [17376]: [1022]
+    Ancestor #8 of the Target Process [17376]: [1]
+    Ancestor #9 of the Target Process [17376]: [0]
+
+Output from /var/log/syslog:
+    Feb  5 16:46:06 kenneth-VirtualBox kernel: [ 8342.477925] Unloaded interceptor!
+    Feb  5 16:46:09 kenneth-VirtualBox kernel: [ 8345.108117] Interceptor: Found syscall table at address: 0xC17DE1C0
+    Feb  5 16:46:09 kenneth-VirtualBox kernel: [ 8345.108122] Loaded interceptor!
+    Feb  5 16:46:14 kenneth-VirtualBox kernel: [ 8350.423910] Target Process: [17376]
+    Feb  5 16:46:14 kenneth-VirtualBox kernel: [ 8350.423914] Ancestor #1 of Target Process [17376]: [17375]
+    Feb  5 16:46:14 kenneth-VirtualBox kernel: [ 8350.423916] Ancestor #2 of Target Process [17376]: [3181]
+    Feb  5 16:46:14 kenneth-VirtualBox kernel: [ 8350.423917] Ancestor #3 of Target Process [17376]: [3180]
+    Feb  5 16:46:14 kenneth-VirtualBox kernel: [ 8350.423918] Ancestor #4 of Target Process [17376]: [2185]
+    Feb  5 16:46:14 kenneth-VirtualBox kernel: [ 8350.423920] Ancestor #5 of Target Process [17376]: [1296]
+    Feb  5 16:46:14 kenneth-VirtualBox kernel: [ 8350.423921] Ancestor #6 of Target Process [17376]: [1146]
+    Feb  5 16:46:14 kenneth-VirtualBox kernel: [ 8350.423922] Ancestor #7 of Target Process [17376]: [1022]
+    Feb  5 16:46:14 kenneth-VirtualBox kernel: [ 8350.423924] Ancestor #8 of Target Process [17376]: [1]
+    Feb  5 16:46:14 kenneth-VirtualBox kernel: [ 8350.423925] Ancestor #9 of Target Process [17376]: [0]
+
+Here is a test on a more interesting process with PID 2:
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006718] Target Process: [2]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006723] Sibling #1 of Target Process [2]: [1]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006724] Child #1 of Target Process [2]: [3]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006725] Child #2 of Target Process [2]: [5]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006726] Child #3 of Target Process [2]: [7]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006727] Child #4 of Target Process [2]: [8]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006728] Child #5 of Target Process [2]: [9]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006730] Child #6 of Target Process [2]: [10]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006731] Child #7 of Target Process [2]: [11]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006732] Child #8 of Target Process [2]: [12]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006733] Child #9 of Target Process [2]: [13]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006734] Child #10 of Target Process [2]: [15]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006736] Child #11 of Target Process [2]: [16]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006737] Child #12 of Target Process [2]: [17]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006738] Child #13 of Target Process [2]: [18]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006739] Child #14 of Target Process [2]: [19]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006740] Child #15 of Target Process [2]: [20]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006741] Child #16 of Target Process [2]: [21]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006742] Child #17 of Target Process [2]: [22]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006743] Child #18 of Target Process [2]: [23]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006744] Child #19 of Target Process [2]: [24]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006746] Child #20 of Target Process [2]: [25]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006747] Child #21 of Target Process [2]: [26]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006748] Child #22 of Target Process [2]: [27]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006749] Child #23 of Target Process [2]: [28]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006750] Child #24 of Target Process [2]: [29]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006751] Child #25 of Target Process [2]: [33]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006752] Child #26 of Target Process [2]: [34]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006753] Child #27 of Target Process [2]: [35]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006755] Child #28 of Target Process [2]: [36]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006756] Child #29 of Target Process [2]: [52]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006757] Child #30 of Target Process [2]: [53]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006758] Child #31 of Target Process [2]: [54]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006759] Child #32 of Target Process [2]: [55]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006760] Child #33 of Target Process [2]: [56]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006761] Child #34 of Target Process [2]: [57]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006762] Child #35 of Target Process [2]: [58]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006763] Child #36 of Target Process [2]: [59]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006765] Child #37 of Target Process [2]: [60]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006766] Child #38 of Target Process [2]: [61]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006767] Child #39 of Target Process [2]: [62]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006768] Child #40 of Target Process [2]: [63]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006769] Child #41 of Target Process [2]: [64]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006770] Child #42 of Target Process [2]: [65]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006771] Child #43 of Target Process [2]: [70]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006772] Child #44 of Target Process [2]: [83]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006774] Child #45 of Target Process [2]: [84]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006775] Child #46 of Target Process [2]: [86]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006776] Child #47 of Target Process [2]: [135]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006777] Child #48 of Target Process [2]: [136]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006779] Child #49 of Target Process [2]: [137]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006780] Child #50 of Target Process [2]: [138]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006781] Child #51 of Target Process [2]: [139]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006782] Child #52 of Target Process [2]: [141]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006783] Child #53 of Target Process [2]: [142]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006784] Child #54 of Target Process [2]: [143]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006785] Child #55 of Target Process [2]: [167]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006786] Child #56 of Target Process [2]: [168]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006788] Child #57 of Target Process [2]: [197]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006789] Child #58 of Target Process [2]: [211]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006790] Child #59 of Target Process [2]: [247]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006791] Child #60 of Target Process [2]: [473]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006792] Child #61 of Target Process [2]: [484]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006793] Child #62 of Target Process [2]: [3118]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006795] Child #63 of Target Process [2]: [9423]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006796] Child #64 of Target Process [2]: [15898]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006797] Child #65 of Target Process [2]: [15985]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006798] Child #66 of Target Process [2]: [17403]
+    Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006799] Ancestor #1 of Target Process [2]: [0]
