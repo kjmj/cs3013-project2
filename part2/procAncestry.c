@@ -31,7 +31,7 @@ int main (int argc, char* argv[]) {
     printf("\tcs3013_syscall2: %ld\n", t);
 
     if(t == -1) {
-        printf("Error: PID %hu is not a running process.\n", pid);
+        printf("Error: Could not find PID [%hu]\n", pid);
         exit(1);
     }
 

@@ -12,7 +12,7 @@ Make sure you are in the directory "cs3013-project2/part1"
 
 To make the project:
     make all
-This should generate a bunch of files, we will mainly be concerned with "interceptor.ko". It also makes our testFile,
+This should generate a bunch of files, we will mainly be concerned with "interceptor.ko". It also builds our testFile,
 which can be found in the /test directory.
 
 To clean the project:

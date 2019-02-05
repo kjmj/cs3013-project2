@@ -45,7 +45,7 @@ asmlinkage long new_sys_cs3013_syscall2(unsigned short *target_pid, struct ances
     // try to find that process
     task = pid_task(find_vpid(pid), PIDTYPE_PID);
     if(task == NULL) {
-        printk(KERN_INFO "Error: PID %hu is not a running process.\n", pid);
+        printk(KERN_INFO "Error: Could not find PID [%hu]\n", pid);
         return -1;
     }
 

@@ -15,7 +15,7 @@ Make sure you are in the directory "cs3013-project2/part2"
 To make the project:
     make all
 This should generate a bunch of files, we will mainly be concerned with "loadableKernelModule.ko" and "procAncestry". It also
-makes our testFile, which can be found in the /test directory.
+builds our testFile, which can be found in the /test directory.
 
 To clean the project:
     make clean
@@ -70,6 +70,12 @@ Output from /var/log/syslog:
     Feb  5 16:46:14 kenneth-VirtualBox kernel: [ 8350.423922] Ancestor #7 of Target Process [17376]: [1022]
     Feb  5 16:46:14 kenneth-VirtualBox kernel: [ 8350.423924] Ancestor #8 of Target Process [17376]: [1]
     Feb  5 16:46:14 kenneth-VirtualBox kernel: [ 8350.423925] Ancestor #9 of Target Process [17376]: [0]
+
+Here is a test on an invalid PID:
+    kenneth@kenneth-VirtualBox:~/Documents/cs3103/cs3013-project2/part2$ ./procAncestry 12230
+    The return values of the system calls are:
+            cs3013_syscall2: -1
+    Error: Could not find PID [12230]
 
 Here is a test on a more interesting process with PID 2:
     Feb  5 16:48:46 kenneth-VirtualBox kernel: [ 8502.006718] Target Process: [2]
