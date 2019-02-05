@@ -1,4 +1,4 @@
-obj-m := traverseAncestry.o
+obj-m := loadableKernelModule.o
 KDIR := /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 

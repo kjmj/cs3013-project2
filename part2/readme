@@ -5,7 +5,7 @@ ancestors. This information will be printed to the system log, and returned as a
 procAncestry.c - This is the user space program. This is where we execute our system call and receive the ancestor struct
 from the kernel space program.
 
-traverseAncestry.c - This is the kernel space program. It takes a pid from procAncestry.c and gets the ancestors, siblings,
+loadableKernelModule.c - This is the kernel space program. It takes a pid from procAncestry.c and gets the ancestors, siblings,
 and children of that process.
 
 ----- Getting Everything Setup -----
@@ -14,18 +14,18 @@ Make sure you are in the directory "cs3013-project2/part2"
 
 To make the project:
     make all
-This should generate a bunch of files, we will mainly be concerned with "traverseAncestry.ko" and "procAncestry". It also
+This should generate a bunch of files, we will mainly be concerned with "loadableKernelModule.ko" and "procAncestry". It also
 makes our testFile, which can be found in the /test directory.
 
 To clean the project:
     make clean
 
 Once you have made the project, we need to insert the module into the kernel and then execute the overridden system call
-    sudo insmod traverseAncestry.ko
+    sudo insmod loadableKernelModule.ko
     ./procAncestry [PID]
 
 Make sure to remove the module from the kernel after using it!
-    sudo rmmod traverseAncestry.ko
+    sudo rmmod loadableKernelModule.ko
 
 ----- Did it work? -----
 To see if you loaded the modules correctly, just navigate open up your system log and read its contents
@@ -35,7 +35,7 @@ You should see a bunch of logs climbing up the ancestry tree, starting from the 
 
 ----- Testing -----
 We wrote a testFile that forks a child process and runs our kernel space ancestry code. It is build automatically in our makefile.
-After inserting the traverseAncestry module, follow these instructions to execute the test:
+After inserting the loadable kernel module, follow these instructions to execute the test:
     cd test
     ./testFile
 
