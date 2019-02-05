@@ -12,7 +12,8 @@ Make sure you are in the directory "cs3013-project2/part1"
 
 To make the project:
     make all
-This should generate a bunch of files, we will mainly be concerned with "interceptor.ko"
+This should generate a bunch of files, we will mainly be concerned with "interceptor.ko". It also makes our testFile,
+which can be found in the /test directory
 
 To clean the project:
     make clean
@@ -31,3 +32,29 @@ If you see a bunch of logs saying that a user opened/closed a file, great, you h
 
 If you see a log saying that a malicious file was opened, then that is (likely and hopefully) the intercepted read system
 call being executed when a user opens a file containing the string "VIRUS"
+
+
+----- Testing -----
+We wrote a testFile that calls open, read, and close on two provided files. It is build automatically in our makefile.
+After inserting the interceptor module, follow these instructions to execute the test
+    cd test
+    ./testFile
+
+Output from ./testFile:
+    The return values of the system calls are:
+            cs3013_syscall1: 0
+            open withoutVirus.txt: 3
+            open withVirus.txt: 4
+            read withoutVirus.txt: 85
+            read withVirus.txt: 95
+            close withoutVirus.txt: 0
+            close withVirus.txt: 0
+
+Output from /var/log/syslog:
+    Feb  5 15:26:07 kenneth-VirtualBox kernel: [ 3545.242402] "'Hello world?!' More like 'Goodbye, world!' EXTERMINATE!" -- Dalek
+    Feb  5 15:26:07 kenneth-VirtualBox kernel: [ 3545.242424] User 1000 is opening file: withoutVirus.txt
+    Feb  5 15:26:07 kenneth-VirtualBox kernel: [ 3545.242430] User 1000 is opening file: withVirus.txt
+    Feb  5 15:26:07 kenneth-VirtualBox kernel: [ 3545.242444] User 1000 read from file descriptor 4, but that read contained malicious code!
+    Feb  5 15:26:07 kenneth-VirtualBox kernel: [ 3545.242448] User 1000 is closing file descriptor: 3
+    Feb  5 15:26:07 kenneth-VirtualBox kernel: [ 3545.242452] User 1000 is closing file descriptor: 4
+
